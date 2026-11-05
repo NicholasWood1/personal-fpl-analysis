@@ -33,13 +33,13 @@ BASE_URL = "https://fantasy.premierleague.com/api/"
 OVERALL_LEAGUE_ID = 314
 SEASON = "2026-27"
 
-TARGET_MANAGER_SAMPLE = 50
+TARGET_MANAGER_SAMPLE = 10000
 MANAGERS_PER_PAGE = 50
 RANDOM_SEED = 2026
 
 # Use a small sample for the test run; change to None to fetch all sampled
 # managers after verifying the data and request behaviour.
-HISTORY_MANAGER_LIMIT: int | None = 1
+HISTORY_MANAGER_LIMIT: int | None = 50
 
 # A small pause between requests. The FPL API does not publish a rate limit.
 REQUEST_DELAY_SECONDS = 0.25
