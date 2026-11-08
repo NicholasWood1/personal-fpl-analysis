@@ -37,8 +37,8 @@ SEASON = "2026-27"
 TARGET_GAMEWEEK = 9
 # Inclusive overall-rank range after TARGET_GAMEWEEK.
 # For ranks 10,001–20,000, set START_RANK = 10_001 and END_RANK = 20_000.
-START_RANK = 1
-END_RANK = 10_000
+START_RANK = 10_001
+END_RANK = 20_000
 MANAGER_COUNT = END_RANK - START_RANK + 1
 MANAGERS_PER_PAGE = 50
 REQUEST_DELAY_SECONDS = 0.25
@@ -159,10 +159,15 @@ def get_context(session: requests.Session) -> tuple[dict, dict[int, dict], dict]
             "complete before collecting its final ranks and picks."
         )
 
+    teams = {
+        int(team["id"]): team.get("name")
+        for team in bootstrap.get("teams", [])
+    }
     players = {
         int(player["id"]): {
             "player_name": player.get("web_name"),
             "element_type": player.get("element_type"),
+            "team": teams.get(int(player["team"])),
         }
         for player in bootstrap.get("elements", [])
     }
@@ -571,6 +576,18 @@ def collect_picks(
     MANAGER_PARTS_DIR.mkdir(parents=True, exist_ok=True)
     PICK_PARTS_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Add team names to pick shards created by earlier versions of this script.
+    for pick_path in sorted(PICK_PARTS_DIR.glob("picks_*.parquet")):
+        picks = pd.read_parquet(pick_path)
+        if "team" in picks.columns:
+            continue
+        picks["team"] = picks["player_id"].map(
+            lambda player_id: players.get(int(player_id), {}).get("team")
+        )
+        temp_path = pick_path.with_name(pick_path.stem + ".tmp.parquet")
+        picks.to_parquet(temp_path, index=False)
+        temp_path.replace(pick_path)
+
     completed_ids = load_completed_manager_ids()
     rank_snapshot_utc = read_json(COHORT_MANIFEST_FILE)["rank_snapshot_utc"]
     estimate_hours = MANAGER_COUNT * REQUEST_DELAY_SECONDS / 3600
@@ -661,6 +678,7 @@ def collect_picks(
                             "player_id": player_id,
                             "player_name": player.get("player_name"),
                             "element_type": player.get("element_type"),
+                            "team": player.get("team"),
                             "squad_position": pick.get("position"),
                             "multiplier": pick.get("multiplier"),
                             "is_captain": pick.get("is_captain"),

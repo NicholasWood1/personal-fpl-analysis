@@ -1,0 +1,11 @@
+{
+  "season": "2026-27",
+  "gameweek": 9,
+  "manager_count": 10000,
+  "start_rank": 10001,
+  "end_rank": 20000,
+  "rank_field": "rank",
+  "rank_snapshot_utc": "2026-11-05T10:44:57.798182+00:00",
+  "created_utc": "2026-11-05T10:51:54.509675+00:00",
+  "rank_basis": "overall rank after target gameweek"
+}
