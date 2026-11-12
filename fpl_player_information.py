@@ -1,4 +1,4 @@
-"""Save FPL player names, positions and teams to a CSV file."""
+"""Save FPL player IDs, names, positions and teams to a CSV file."""
 
 from pathlib import Path
 
@@ -31,13 +31,14 @@ def fetch_player_information() -> pd.DataFrame:
 
     rows = [
         {
+            "player_id": int(player["id"]),
             "player_name": player.get("web_name"),
             "position": positions.get(int(player["element_type"])),
             "team": teams.get(int(player["team"])),
         }
         for player in bootstrap.get("elements", [])
     ]
-    return pd.DataFrame(rows, columns=["player_name", "position", "team"])
+    return pd.DataFrame(rows, columns=["player_id", "player_name", "position", "team"])
 
 
 def main() -> None:
